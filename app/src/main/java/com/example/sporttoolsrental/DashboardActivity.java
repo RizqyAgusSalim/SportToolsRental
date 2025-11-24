@@ -1,193 +1,133 @@
 package com.example.sporttoolsrental;
 
-import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import java.util.ArrayList;
+import androidx.cardview.widget.CardView;
 
 public class DashboardActivity extends AppCompatActivity {
 
-    private TextView tvWelcome;
-    private ListView lvTools;
-    private Button btnRental;
-    private ArrayList<ToolItem> toolsList;
-    private ArrayList<String> rentalList;
-    private ToolAdapter adapter;
-    private String userName, userNIM, userPhone;
-    private int selectedPosition = -1;
+    private TextView tvWelcome, tvNim, tvPhone;
+    private CardView cardRentTools, cardMyBookings, cardHistory, cardProfile;
+    private Button btnLogout;
+    private SessionManager sessionManager;
+    private String userName, userNim, userPhone;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dashboard);
 
-        // Ambil data dari intent
-        userName = getIntent().getStringExtra("name");
-        userNIM = getIntent().getStringExtra("nim");
-        userPhone = getIntent().getStringExtra("phone");
+        sessionManager = new SessionManager(this);
 
-        // Inisialisasi views
+        // Initialize views
         tvWelcome = findViewById(R.id.tvWelcome);
-        lvTools = findViewById(R.id.lvTools);
-        btnRental = findViewById(R.id.btnRental);
+        tvNim = findViewById(R.id.tvNim);
+        tvPhone = findViewById(R.id.tvPhone);
+        cardRentTools = findViewById(R.id.cardRentTools);
+        cardMyBookings = findViewById(R.id.cardMyBookings);
+        cardHistory = findViewById(R.id.cardHistory);
+        cardProfile = findViewById(R.id.cardProfile);
+        btnLogout = findViewById(R.id.btnLogout);
 
-        // Set welcome message
-        tvWelcome.setText("Selamat Datang, " + userName + "!");
-
-        // Inisialisasi daftar alat dengan foto dan detail lengkap
-        toolsList = new ArrayList<>();
-        toolsList.add(new ToolItem("Bola Sepak", "Bola sepak standar FIFA size 5", 10, 8, 2, R.drawable.oip));
-        toolsList.add(new ToolItem("Bola Basket", "Bola basket Molten GG7X", 8, 6, 2, R.drawable.oip3));
-        toolsList.add(new ToolItem("Bola Voli", "Bola voli Mikasa MVA200", 6, 5, 1, R.drawable.oip2));
-        toolsList.add(new ToolItem("Raket Badminton", "Raket Yonex Voltric Z-Force II", 12, 10, 2, R.drawable.oip4));
-        toolsList.add(new ToolItem("Raket Tenis", "Raket Wilson Pro Staff", 5, 4, 1, R.drawable.oip5));
-        toolsList.add(new ToolItem("Net Voli", "Net voli standar internasional", 3, 3, 0, R.drawable.oip6));
-        toolsList.add(new ToolItem("Cone Latihan", "Cone marker untuk latihan", 20, 18, 2, R.drawable.oip7));
-        toolsList.add(new ToolItem("Bet Pingpong", "Bet pingpong Butterfly", 10, 8, 2, R.drawable.oip8));
-
-        // Inisialisasi daftar peminjaman
-        rentalList = new ArrayList<>();
-
-        // Setup ListView dengan custom adapter
-        adapter = new ToolAdapter(this, toolsList);
-        lvTools.setAdapter(adapter);
-        lvTools.setChoiceMode(ListView.CHOICE_MODE_SINGLE);
-
-        // Set item click listener
-        lvTools.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                selectedPosition = position;
-            }
-        });
-
-        // Button pinjam
-        btnRental.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (selectedPosition == -1) {
-                    Toast.makeText(DashboardActivity.this,
-                            "Pilih alat yang ingin dipinjam!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                ToolItem selectedTool = toolsList.get(selectedPosition);
-
-                if (selectedTool.available == 0) {
-                    Toast.makeText(DashboardActivity.this,
-                            "Alat tidak tersedia!", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                // Tambah ke daftar peminjaman
-                String rentalInfo = selectedTool.name + " - " + selectedTool.description +
-                        "\nPeminjam: " + userName + " (NIM: " + userNIM + ")\nTelepon: " + userPhone;
-                rentalList.add(rentalInfo);
-
-                // Tampilkan dialog konfirmasi
-                showRentalDialog(selectedTool.name);
-            }
-        });
-
-        // Button lihat peminjaman
-        Button btnViewRental = findViewById(R.id.btnViewRental);
-        btnViewRental.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showRentalListDialog();
-            }
-        });
-    }
-
-    private void showRentalDialog(String toolName) {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("✅ Peminjaman Berhasil!");
-        builder.setMessage("Anda telah meminjam: " + toolName +
-                "\n\nSilakan ambil di ruang UKM Olahraga.");
-        builder.setPositiveButton("OK", null);
-        builder.show();
-
-        selectedPosition = -1;
-        lvTools.clearChoices();
-    }
-
-    private void showRentalListDialog() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("📋 Daftar Peminjaman Anda");
-
-        if (rentalList.isEmpty()) {
-            builder.setMessage("Belum ada peminjaman.");
+        // Get data from Intent (from MainActivity) or Session
+        if (getIntent().hasExtra("name")) {
+            // Data from MainActivity (quick access without login)
+            userName = getIntent().getStringExtra("name");
+            userNim = getIntent().getStringExtra("nim");
+            userPhone = getIntent().getStringExtra("phone");
+        } else if (sessionManager.isLoggedIn()) {
+            // Data from Session (logged in user)
+            userName = sessionManager.getUserName();
+            userNim = sessionManager.getUserNim();
+            userPhone = ""; // Can be fetched from database if needed
         } else {
-            StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < rentalList.size(); i++) {
-                sb.append((i + 1)).append(". ").append(rentalList.get(i)).append("\n\n");
-            }
-            builder.setMessage(sb.toString());
+            // No data, redirect to login
+            redirectToLogin();
+            return;
         }
 
-        builder.setPositiveButton("Tutup", null);
-        builder.show();
+        // Display user information
+        displayUserInfo();
+
+        // Card click listeners
+        cardRentTools.setOnClickListener(v -> {
+            // TODO: Navigate to Rent Tools Activity
+            showToast("Fitur Sewa Alat (Coming Soon)");
+        });
+
+        cardMyBookings.setOnClickListener(v -> {
+            // TODO: Navigate to My Bookings Activity
+            showToast("Fitur Peminjaman Saya (Coming Soon)");
+        });
+
+        cardHistory.setOnClickListener(v -> {
+            // TODO: Navigate to History Activity
+            showToast("Fitur Riwayat (Coming Soon)");
+        });
+
+        cardProfile.setOnClickListener(v -> {
+            // TODO: Navigate to Profile Activity
+            showToast("Fitur Profil (Coming Soon)");
+        });
+
+        btnLogout.setOnClickListener(v -> showLogoutDialog());
+
+        // Handle Back Button - Modern Way
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                showLogoutDialog();
+            }
+        });
     }
 
-    // Inner class untuk data tool
-    class ToolItem {
-        String name;
-        String description;
-        int available;
-        int good;
-        int damaged;
-        int imageRes;
-
-        ToolItem(String name, String description, int available, int good, int damaged, int imageRes) {
-            this.name = name;
-            this.description = description;
-            this.available = available;
-            this.good = good;
-            this.damaged = damaged;
-            this.imageRes = imageRes;
+    private void displayUserInfo() {
+        tvWelcome.setText("Selamat datang, " + userName + "!");
+        if (userNim != null && !userNim.isEmpty()) {
+            tvNim.setText("NIM: " + userNim);
+            tvNim.setVisibility(View.VISIBLE);
+        } else {
+            tvNim.setVisibility(View.GONE);
+        }
+        if (userPhone != null && !userPhone.isEmpty()) {
+            tvPhone.setText("Telepon: " + userPhone);
+            tvPhone.setVisibility(View.VISIBLE);
+        } else {
+            tvPhone.setVisibility(View.GONE);
         }
     }
 
-    // Custom Adapter untuk menampilkan item dengan foto
-    class ToolAdapter extends ArrayAdapter<ToolItem> {
+    private void redirectToLogin() {
+        Intent intent = new Intent(DashboardActivity.this, LandingActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
 
-        ToolAdapter(Context context, ArrayList<ToolItem> tools) {
-            super(context, 0, tools);
-        }
+    private void showLogoutDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Logout")
+                .setMessage("Apakah Anda yakin ingin keluar?")
+                .setPositiveButton("Ya", (dialog, which) -> {
+                    if (sessionManager.isLoggedIn()) {
+                        sessionManager.logout();
+                    }
+                    Intent intent = new Intent(DashboardActivity.this, LandingActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                })
+                .setNegativeButton("Batal", null)
+                .show();
+    }
 
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            if (convertView == null) {
-                convertView = LayoutInflater.from(getContext()).inflate(
-                        R.layout.item_list_tool, parent, false);
-            }
-
-            ToolItem tool = getItem(position);
-
-            ImageView ivToolImage = convertView.findViewById(R.id.ivToolImage);
-            TextView tvToolName = convertView.findViewById(R.id.tvToolName);
-            TextView tvToolDesc = convertView.findViewById(R.id.tvToolDesc);
-            TextView tvToolStatus = convertView.findViewById(R.id.tvToolStatus);
-
-            if (tool != null) {
-                ivToolImage.setImageResource(tool.imageRes);
-                tvToolName.setText(tool.name);
-                tvToolDesc.setText(tool.description);
-                tvToolStatus.setText("Tersedia: " + tool.available + " | Baik: " + tool.good + " | Rusak: " + tool.damaged);
-            }
-
-            return convertView;
-        }
+    private void showToast(String message) {
+        android.widget.Toast.makeText(this, message, android.widget.Toast.LENGTH_SHORT).show();
     }
 }
