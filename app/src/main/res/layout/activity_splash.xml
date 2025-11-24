@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#E6F0FA">
+
+    <!-- Gambar utama di atas -->
+    <ImageView
+        android:id="@+id/headerImage"
+        android:layout_width="250dp"
+        android:layout_height="180dp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="80dp"
+        android:src="@drawable/ukmo" />  <!-- Ganti dengan nama gambar kamu -->
+
+    <!-- Logo kecil di bawah gambar -->
+    <ImageView
+        android:id="@+id/logoApp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_below="@id/headerImage"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="12dp"
+        android:src="@drawable/ukmo2"   />      <!-- Ganti dengan logo kamu -->
+
+
+    <!-- Judul -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="🏅 Sport Tools Rental"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#0D47A1"
+        android:layout_below="@id/logoApp"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
+
+    <!-- Sub Judul -->
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="UKM Olahraga Politeknik Negeri Lampung"
+        android:textSize="16sp"
+        android:textColor="#1565C0"
+        android:layout_below="@id/tvTitle"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="6dp" />
+
+    <!-- Tombol Mulai -->
+    <Button
+        android:id="@+id/btnMulai"
+        android:layout_width="220dp"
+        android:layout_height="wrap_content"
+        android:text="PEMINJAMAN BARU"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#1976D2"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="120dp"
+        android:elevation="6dp" />
+
+    <!-- Footer -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="© 2025 Sport Tools Rental"
+        android:textColor="#90A4AE"
+        android:textSize="12sp"
+        android:layout_centerHorizontal="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="24dp" />
+</RelativeLayout>
